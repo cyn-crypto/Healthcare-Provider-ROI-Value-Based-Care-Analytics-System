@@ -126,7 +126,7 @@ Specified in `dashboard/tableau_specs.md`:
 
 ---
 
-## Resume bullets this project supports
+## Brief Description
 
 - Built provider performance scoring model using SQL on synthetic claims data to evaluate cost, utilization, and quality metrics across healthcare providers.
 - Developed financial ROI model using Python to estimate cost savings from steering patients toward higher-value providers based on claims and outcome data.
