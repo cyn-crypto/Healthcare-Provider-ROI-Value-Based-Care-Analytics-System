@@ -3,6 +3,8 @@
 A full analytics pipeline for evaluating provider performance, modeling financial ROI from patient steering, and tracking value-based care KPIs.
 
 ---
+## Project Overview
+This project builds the analytics infrastructure for a value-based care steering program. Using 50,000 synthetic claims across 80 providers, it scores every provider on a composite index of cost efficiency, clinical quality, and utilization, then models the financial return from steering patients toward higher-value providers. Four steering scenarios are simulated — from 10% to 50% of eligible members — quantifying net savings, readmission reductions, and ER visit avoidance. Product analytics KPIs track steering effectiveness, provider engagement, and cost-per-member savings over time. Five Tableau dashboards surface the results for operational, strategic, and executive audiences. All analytical outputs pass a nine-point data validation and QA suite before export.
 
 ## Project structure
 
@@ -123,17 +125,6 @@ Specified in `dashboard/tableau_specs.md`:
 3. **Regional Variation** — filled US map, heatmap by region × specialty
 4. **ROI & Steering Scenarios** — waterfall, ROI trend, interactive steering slider
 5. **VBC KPI Tracker** — BAN cards, trend lines, mobile layout
-
----
-
-## Brief Description
-
-- Built provider performance scoring model using SQL on synthetic claims data to evaluate cost, utilization, and quality metrics across healthcare providers.
-- Developed financial ROI model using Python to estimate cost savings from steering patients toward higher-value providers based on claims and outcome data.
-- Simulated patient steering scenarios to quantify impact on healthcare costs, readmission rates and utilization patterns across provider networks.
-- Created Tableau dashboard specifications to visualize provider rankings, cost-quality tradeoffs, regional variation, and value-based care performance metrics.
-- Defined and tracked product analytics KPIs such as steering effectiveness, provider engagement and cost-per-member savings.
-- Performed data validation and QA checks across claims and provider datasets to ensure accuracy and consistency of analytical outputs.
 
 ---
 
