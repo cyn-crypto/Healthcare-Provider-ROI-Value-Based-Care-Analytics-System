@@ -1,0 +1,660 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Healthcare Provider ROI & Value-Based Care Analytics</title>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.js"></script>
+<link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@300;400;500;600&family=DM+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg:         #0d0f14;
+    --bg2:        #13161e;
+    --bg3:        #1a1e28;
+    --border:     #252a38;
+    --border2:    #2e3448;
+    --text:       #e8eaf0;
+    --text2:      #8b92a8;
+    --text3:      #555e78;
+    --green:      #22d3a0;
+    --green-dim:  #0d7a5c;
+    --amber:      #f59e0b;
+    --amber-dim:  #7a4f08;
+    --red:        #f87171;
+    --red-dim:    #7a1f1f;
+    --blue:       #60a5fa;
+    --blue-dim:   #1e3a5f;
+    --purple:     #a78bfa;
+    --radius:     8px;
+    --radius-lg:  12px;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body { background: var(--bg); color: var(--text); font-family: 'DM Sans', sans-serif; font-size: 14px; line-height: 1.5; min-height: 100vh; }
+
+  /* ── Header ── */
+  .header { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; align-items: center; justify-content: space-between; height: 56px; position: sticky; top: 0; z-index: 100; }
+  .header-title { font-size: 15px; font-weight: 600; letter-spacing: -0.02em; display: flex; align-items: center; gap: 10px; }
+  .header-title .dot { width: 8px; height: 8px; border-radius: 50%; background: var(--green); box-shadow: 0 0 8px var(--green); animation: pulse 2s infinite; }
+  @keyframes pulse { 0%,100%{ opacity:1 } 50%{ opacity:0.4 } }
+  .header-meta { font-size: 12px; color: var(--text3); font-family: 'DM Mono', monospace; }
+
+  /* ── Nav tabs ── */
+  .nav { background: var(--bg2); border-bottom: 1px solid var(--border); padding: 0 2rem; display: flex; gap: 0; }
+  .nav-tab { padding: 12px 18px; font-size: 13px; font-weight: 500; color: var(--text3); cursor: pointer; border: none; background: none; border-bottom: 2px solid transparent; transition: all 0.2s; white-space: nowrap; }
+  .nav-tab:hover { color: var(--text2); }
+  .nav-tab.active { color: var(--text); border-bottom-color: var(--green); }
+
+  /* ── Layout ── */
+  .page { display: none; padding: 1.5rem 2rem 2.5rem; }
+  .page.active { display: block; }
+
+  /* ── KPI strip ── */
+  .kpi-row { display: grid; grid-template-columns: repeat(5, 1fr); gap: 12px; margin-bottom: 1.5rem; }
+  .kpi { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem 1.25rem; position: relative; overflow: hidden; }
+  .kpi::before { content:''; position:absolute; top:0; left:0; right:0; height:2px; background: var(--accent, var(--border2)); }
+  .kpi.g::before { --accent: var(--green); }
+  .kpi.b::before { --accent: var(--blue); }
+  .kpi.a::before { --accent: var(--amber); }
+  .kpi.r::before { --accent: var(--red); }
+  .kpi.p::before { --accent: var(--purple); }
+  .kpi-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.06em; margin-bottom: 6px; }
+  .kpi-val { font-size: 26px; font-weight: 300; letter-spacing: -0.03em; line-height: 1; margin-bottom: 4px; }
+  .kpi-sub { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
+  .kpi-val.green { color: var(--green); }
+  .kpi-val.blue  { color: var(--blue); }
+  .kpi-val.amber { color: var(--amber); }
+  .kpi-val.red   { color: var(--red); }
+  .kpi-val.purple{ color: var(--purple); }
+
+  /* ── Grid ── */
+  .grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  .grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  .grid-3-1 { display: grid; grid-template-columns: 2fr 1fr; gap: 1rem; margin-bottom: 1rem; }
+  .full { margin-bottom: 1rem; }
+
+  /* ── Card ── */
+  .card { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1.25rem; }
+  .card-title { font-size: 12px; font-weight: 500; color: var(--text2); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 1rem; display: flex; align-items: center; gap: 6px; }
+  .card-title .icon { width: 6px; height: 6px; border-radius: 1px; background: var(--green); }
+  .chart-wrap { position: relative; }
+
+  /* ── Filter pills ── */
+  .pills { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 1rem; }
+  .pill { font-size: 11px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--border2); background: transparent; color: var(--text3); cursor: pointer; font-family: 'DM Sans', sans-serif; transition: all 0.15s; }
+  .pill:hover { border-color: var(--text3); color: var(--text2); }
+  .pill.active { background: var(--green-dim); border-color: var(--green); color: var(--green); }
+
+  /* ── Table ── */
+  .tbl { width: 100%; border-collapse: collapse; font-size: 12px; }
+  .tbl th { text-align: left; padding: 8px 12px; color: var(--text3); font-weight: 500; font-size: 11px; text-transform: uppercase; letter-spacing: 0.05em; border-bottom: 1px solid var(--border); }
+  .tbl td { padding: 8px 12px; border-bottom: 1px solid var(--border); color: var(--text2); }
+  .tbl tr:hover td { background: var(--bg3); }
+  .tbl td:first-child { font-family: 'DM Mono', monospace; color: var(--text); }
+  .badge { display: inline-block; font-size: 10px; padding: 2px 7px; border-radius: 999px; font-weight: 500; }
+  .badge.high   { background: #0d3d2a; color: var(--green); border: 1px solid var(--green-dim); }
+  .badge.mod    { background: #3d2a00; color: var(--amber); border: 1px solid var(--amber-dim); }
+  .badge.low    { background: #3d0d0d; color: var(--red);   border: 1px solid var(--red-dim); }
+  .score-bar { display: flex; align-items: center; gap: 6px; }
+  .score-bar .bar-track { flex: 1; height: 4px; background: var(--border2); border-radius: 2px; overflow: hidden; }
+  .score-bar .bar-fill  { height: 100%; border-radius: 2px; }
+  .score-num { font-family: 'DM Mono', monospace; font-size: 11px; width: 28px; text-align: right; color: var(--text); }
+
+  /* ── Legend ── */
+  .legend { display: flex; flex-wrap: wrap; gap: 12px; margin-bottom: 8px; }
+  .legend-item { display: flex; align-items: center; gap: 5px; font-size: 11px; color: var(--text3); }
+  .legend-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+  .legend-sq  { width: 10px; height: 6px; border-radius: 2px; flex-shrink: 0; }
+
+  /* ── Scenario cards ── */
+  .scenario-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; margin-bottom: 1rem; }
+  .scenario-card { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius-lg); padding: 1rem; cursor: pointer; transition: all 0.2s; }
+  .scenario-card:hover, .scenario-card.active { border-color: var(--green); background: #0d2018; }
+  .sc-label { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 8px; }
+  .sc-rate { font-size: 28px; font-weight: 300; color: var(--green); letter-spacing: -0.03em; line-height: 1; }
+  .sc-rate span { font-size: 13px; color: var(--text3); }
+  .sc-savings { font-size: 13px; color: var(--text); margin-top: 4px; }
+  .sc-roi { font-size: 11px; color: var(--text3); font-family: 'DM Mono', monospace; }
+
+  /* ── Waterfall ── */
+  .waterfall { display: flex; gap: 6px; align-items: flex-end; height: 220px; padding: 0 4px; }
+  .wf-col { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 4px; }
+  .wf-bar-wrap { flex: 1; display: flex; flex-direction: column; justify-content: flex-end; width: 100%; }
+  .wf-bar { width: 100%; border-radius: 4px 4px 0 0; transition: all 0.4s; min-height: 4px; }
+  .wf-label { font-size: 10px; color: var(--text3); text-align: center; line-height: 1.2; }
+  .wf-val { font-size: 10px; font-family: 'DM Mono', monospace; color: var(--text2); }
+
+  /* ── Region map boxes ── */
+  .region-grid { display: grid; grid-template-columns: repeat(5,1fr); gap: 8px; margin-bottom: 1rem; }
+  .region-box { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 1rem; text-align: center; cursor: pointer; transition: all 0.2s; }
+  .region-box:hover,.region-box.active { border-color: var(--blue); }
+  .region-box .r-name { font-size: 11px; color: var(--text3); text-transform: uppercase; letter-spacing: 0.05em; margin-bottom: 6px; }
+  .region-box .r-score { font-size: 24px; font-weight: 300; letter-spacing: -0.03em; }
+  .region-box .r-sub { font-size: 10px; color: var(--text3); font-family: 'DM Mono', monospace; margin-top: 2px; }
+
+  /* ── Radar ── */
+  .radar-wrap { position: relative; }
+
+  /* ── Scrollbar ── */
+  ::-webkit-scrollbar { width: 4px; height: 4px; }
+  ::-webkit-scrollbar-track { background: var(--bg); }
+  ::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 2px; }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <div class="header-title">
+    <span class="dot"></span>
+    Healthcare Provider ROI &amp; Value-Based Care Analytics
+  </div>
+  <div class="header-meta">80 providers · 50K claims · 5,000 members</div>
+</div>
+
+<div class="nav">
+  <button class="nav-tab active" onclick="showPage('rankings')">Provider Rankings</button>
+  <button class="nav-tab" onclick="showPage('scatter')">Cost-Quality</button>
+  <button class="nav-tab" onclick="showPage('regional')">Regional Variation</button>
+  <button class="nav-tab" onclick="showPage('roi')">ROI Scenarios</button>
+  <button class="nav-tab" onclick="showPage('kpis')">KPI Tracker</button>
+</div>
+
+<!-- ══════════════════════════════════════════ PAGE 1: RANKINGS -->
+<div class="page active" id="page-rankings">
+  <div class="kpi-row">
+    <div class="kpi g"><div class="kpi-label">Total providers</div><div class="kpi-val green">80</div><div class="kpi-sub">6 specialties · 5 regions</div></div>
+    <div class="kpi b"><div class="kpi-label">Avg composite score</div><div class="kpi-val blue">53.3</div><div class="kpi-sub">out of 100</div></div>
+    <div class="kpi g"><div class="kpi-label">High value</div><div class="kpi-val green">1</div><div class="kpi-sub">score ≥ 70</div></div>
+    <div class="kpi a"><div class="kpi-label">Moderate value</div><div class="kpi-val amber">52</div><div class="kpi-sub">score 50–69</div></div>
+    <div class="kpi r"><div class="kpi-label">Low value</div><div class="kpi-val red">27</div><div class="kpi-sub">score &lt; 50</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Top 15 providers by composite score</div>
+      <div style="overflow-x:auto;">
+        <table class="tbl" id="rankings-table"></table>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Score components — top 15</div>
+      <div class="chart-wrap"><canvas id="components-chart" height="340"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Avg composite score by specialty</div>
+      <div class="chart-wrap"><canvas id="spec-chart" height="200"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Value tier distribution</div>
+      <div class="legend">
+        <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>High value (1)</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>Moderate (52)</div>
+        <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>Low value (27)</div>
+      </div>
+      <div class="chart-wrap"><canvas id="tier-donut" height="200"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ PAGE 2: SCATTER -->
+<div class="page" id="page-scatter">
+  <div class="kpi-row">
+    <div class="kpi g"><div class="kpi-label">Avg cost score</div><div class="kpi-val green">50.0</div><div class="kpi-sub">higher = more efficient</div></div>
+    <div class="kpi b"><div class="kpi-label">Avg quality score</div><div class="kpi-val blue">75.7</div><div class="kpi-sub">HEDIS composite</div></div>
+    <div class="kpi a"><div class="kpi-label">Avg CPM</div><div class="kpi-val amber">$3,037</div><div class="kpi-sub">cost per member</div></div>
+    <div class="kpi r"><div class="kpi-label">Avg readmission</div><div class="kpi-val red">11.9%</div><div class="kpi-sub">30-day rate</div></div>
+    <div class="kpi p"><div class="kpi-label">Avg ER rate</div><div class="kpi-val purple">18.1%</div><div class="kpi-sub">ER visit rate</div></div>
+  </div>
+
+  <div class="full card">
+    <div class="card-title"><span class="icon"></span>Cost score vs. quality score — all 80 providers</div>
+    <div class="pills" id="scatter-pills">
+      <button class="pill active" onclick="filterScatter('All',this)">All specialties</button>
+      <button class="pill" onclick="filterScatter('Primary Care',this)">Primary Care</button>
+      <button class="pill" onclick="filterScatter('Cardiology',this)">Cardiology</button>
+      <button class="pill" onclick="filterScatter('Oncology',this)">Oncology</button>
+      <button class="pill" onclick="filterScatter('Orthopedics',this)">Orthopedics</button>
+      <button class="pill" onclick="filterScatter('Neurology',this)">Neurology</button>
+      <button class="pill" onclick="filterScatter('General Surgery',this)">General Surgery</button>
+    </div>
+    <div class="legend">
+      <div class="legend-item"><span class="legend-dot" style="background:var(--green)"></span>High value</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--amber)"></span>Moderate value</div>
+      <div class="legend-item"><span class="legend-dot" style="background:var(--red)"></span>Low value</div>
+    </div>
+    <div class="chart-wrap"><canvas id="scatter-chart" height="380"></canvas></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Cost per member by specialty ($)</div>
+      <div class="chart-wrap"><canvas id="cpm-spec-chart" height="200"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Readmission rate by specialty (%)</div>
+      <div class="chart-wrap"><canvas id="readmit-spec-chart" height="200"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ PAGE 3: REGIONAL -->
+<div class="page" id="page-regional">
+  <div class="kpi-row">
+    <div class="kpi g"><div class="kpi-label">Best region</div><div class="kpi-val green">Southeast</div><div class="kpi-sub">avg score 58.4</div></div>
+    <div class="kpi b"><div class="kpi-label">Lowest CPM</div><div class="kpi-val blue">Southeast</div><div class="kpi-sub">$2,842 avg</div></div>
+    <div class="kpi a"><div class="kpi-label">Highest CPM</div><div class="kpi-val amber">Midwest</div><div class="kpi-sub">$3,140 avg</div></div>
+    <div class="kpi r"><div class="kpi-label">Score gap</div><div class="kpi-val red">8.4 pts</div><div class="kpi-sub">best vs worst region</div></div>
+    <div class="kpi p"><div class="kpi-label">High value region</div><div class="kpi-val purple">Southwest</div><div class="kpi-sub">only HV provider</div></div>
+  </div>
+
+  <div class="region-grid" id="region-boxes"></div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Avg composite score by region</div>
+      <div class="chart-wrap"><canvas id="reg-score-chart" height="220"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Cost per member by region ($)</div>
+      <div class="chart-wrap"><canvas id="reg-cpm-chart" height="220"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Provider value tier mix by region</div>
+      <div class="chart-wrap"><canvas id="reg-tier-chart" height="200"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Avg quality score by region</div>
+      <div class="chart-wrap"><canvas id="reg-quality-chart" height="200"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ PAGE 4: ROI -->
+<div class="page" id="page-roi">
+  <div class="kpi-row">
+    <div class="kpi g"><div class="kpi-label">Base case savings</div><div class="kpi-val green">$4.55M</div><div class="kpi-sub">20% steering rate</div></div>
+    <div class="kpi b"><div class="kpi-label">Base case ROI</div><div class="kpi-val blue">3,846%</div><div class="kpi-sub">987 members steered</div></div>
+    <div class="kpi a"><div class="kpi-label">Readmissions avoided</div><div class="kpi-val amber">29</div><div class="kpi-sub">base case · $12,500 ea</div></div>
+    <div class="kpi r"><div class="kpi-label">ER visits avoided</div><div class="kpi-val red">36</div><div class="kpi-sub">base case · $2,200 ea</div></div>
+    <div class="kpi p"><div class="kpi-label">CPM saved</div><div class="kpi-val purple">$4,615</div><div class="kpi-sub">per member steered</div></div>
+  </div>
+
+  <div class="scenario-grid">
+    <div class="scenario-card" onclick="selectScenario(0,this)">
+      <div class="sc-label">Conservative</div>
+      <div class="sc-rate">10<span>% steering</span></div>
+      <div class="sc-savings">$1.48M net savings</div>
+      <div class="sc-roi">493 members · ROI 2,505%</div>
+    </div>
+    <div class="scenario-card active" onclick="selectScenario(1,this)">
+      <div class="sc-label">Base case</div>
+      <div class="sc-rate">20<span>% steering</span></div>
+      <div class="sc-savings">$4.55M net savings</div>
+      <div class="sc-roi">987 members · ROI 3,846%</div>
+    </div>
+    <div class="scenario-card" onclick="selectScenario(2,this)">
+      <div class="sc-label">Aggressive</div>
+      <div class="sc-rate">35<span>% steering</span></div>
+      <div class="sc-savings">$9.61M net savings</div>
+      <div class="sc-roi">1,727 members · ROI 4,638%</div>
+    </div>
+    <div class="scenario-card" onclick="selectScenario(3,this)">
+      <div class="sc-label">Maximum</div>
+      <div class="sc-rate">50<span>% steering</span></div>
+      <div class="sc-savings">$16.79M net savings</div>
+      <div class="sc-roi">2,468 members · ROI 5,669%</div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Net savings vs program cost — all scenarios</div>
+      <div class="chart-wrap"><canvas id="roi-bar-chart" height="220"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Savings waterfall — selected scenario</div>
+      <div class="waterfall" id="waterfall"></div>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>ROI % by steering rate</div>
+      <div class="chart-wrap"><canvas id="roi-line-chart" height="200"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Cost per member saved by scenario ($)</div>
+      <div class="chart-wrap"><canvas id="cpm-saved-chart" height="200"></canvas></div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════════ PAGE 5: KPIs -->
+<div class="page" id="page-kpis">
+  <div class="kpi-row">
+    <div class="kpi g"><div class="kpi-label">Members steerable</div><div class="kpi-val green">4,937</div><div class="kpi-sub">not on HV provider</div></div>
+    <div class="kpi b"><div class="kpi-label">Providers accepting VBC</div><div class="kpi-val blue">63.7%</div><div class="kpi-sub">51 of 80</div></div>
+    <div class="kpi a"><div class="kpi-label">Avg HEDIS score</div><div class="kpi-val amber">75.7</div><div class="kpi-sub">composite / 100</div></div>
+    <div class="kpi r"><div class="kpi-label">Preventive visit rate</div><div class="kpi-val red">34.9%</div><div class="kpi-sub">network avg</div></div>
+    <div class="kpi p"><div class="kpi-label">Projected CPM savings</div><div class="kpi-val purple">$4,615</div><div class="kpi-sub">per member steered</div></div>
+  </div>
+
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Score component breakdown — network average</div>
+      <div class="chart-wrap"><canvas id="radar-chart" height="300"></canvas></div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Quality KPIs — network rates</div>
+      <div class="chart-wrap"><canvas id="qual-chart" height="300"></canvas></div>
+    </div>
+  </div>
+
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Steering effectiveness</div>
+      <div style="display:flex;flex-direction:column;gap:12px;margin-top:4px;">
+        <div><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:4px;"><span>Members steered (base)</span><span style="color:var(--text)">987</span></div><div style="height:5px;background:var(--border2);border-radius:3px;overflow:hidden;"><div style="width:20%;height:100%;background:var(--green);border-radius:3px;"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:4px;"><span>High-value attribution</span><span style="color:var(--text)">1.3%</span></div><div style="height:5px;background:var(--border2);border-radius:3px;overflow:hidden;"><div style="width:1.3%;height:100%;background:var(--green);border-radius:3px;"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:4px;"><span>VBC acceptance</span><span style="color:var(--text)">63.7%</span></div><div style="height:5px;background:var(--border2);border-radius:3px;overflow:hidden;"><div style="width:63.7%;height:100%;background:var(--blue);border-radius:3px;"></div></div></div>
+        <div><div style="display:flex;justify-content:space-between;font-size:11px;color:var(--text3);margin-bottom:4px;"><span>Tier 1 providers</span><span style="color:var(--text)">26.3%</span></div><div style="height:5px;background:var(--border2);border-radius:3px;overflow:hidden;"><div style="width:26.3%;height:100%;background:var(--purple);border-radius:3px;"></div></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Utilization KPIs</div>
+      <div style="display:flex;flex-direction:column;gap:14px;margin-top:4px;">
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;"><div><div style="font-size:11px;color:var(--text3);">Readmission rate</div><div style="font-size:22px;font-weight:300;color:var(--red)">11.9%</div></div><div style="font-size:11px;color:var(--text3);text-align:right;">Target: ≤10%</div></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;"><div><div style="font-size:11px;color:var(--text3);">ER visit rate</div><div style="font-size:22px;font-weight:300;color:var(--amber)">18.1%</div></div><div style="font-size:11px;color:var(--text3);text-align:right;">Target: ≤15%</div></div>
+        <div style="display:flex;justify-content:space-between;align-items:flex-end;"><div><div style="font-size:11px;color:var(--text3);">Preventive visit rate</div><div style="font-size:22px;font-weight:300;color:var(--green)">34.9%</div></div><div style="font-size:11px;color:var(--text3);text-align:right;">Target: ≥40%</div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-title"><span class="icon"></span>Data validation status</div>
+      <div style="display:flex;flex-direction:column;gap:6px;margin-top:4px;">
+        <div id="qa-list"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+// ── DATA ──────────────────────────────────────────────
+const PROVIDERS = [{"provider_id":"PROV0001","specialty":"General Surgery","region":"Northeast","network_tier":2,"composite_score":65.0,"value_tier":"Moderate Value","cost_score":71.0,"quality_score":91.4,"cost_per_member":2350.42,"readmission_rate":0.13,"er_visit_rate":0.19,"total_claims":621},{"provider_id":"PROV0002","specialty":"Primary Care","region":"Midwest","network_tier":1,"composite_score":67.3,"value_tier":"Moderate Value","cost_score":79.2,"quality_score":88.3,"cost_per_member":2220.09,"readmission_rate":0.12,"er_visit_rate":0.17,"total_claims":610},{"provider_id":"PROV0003","specialty":"Cardiology","region":"Southeast","network_tier":1,"composite_score":65.1,"value_tier":"Moderate Value","cost_score":69.7,"quality_score":83.6,"cost_per_member":2405.17,"readmission_rate":0.1,"er_visit_rate":0.19,"total_claims":631},{"provider_id":"PROV0004","specialty":"Cardiology","region":"Northeast","network_tier":2,"composite_score":57.3,"value_tier":"Moderate Value","cost_score":62.9,"quality_score":76.4,"cost_per_member":2622.35,"readmission_rate":0.13,"er_visit_rate":0.2,"total_claims":645},{"provider_id":"PROV0005","specialty":"General Surgery","region":"West","network_tier":2,"composite_score":58.9,"value_tier":"Moderate Value","cost_score":52.7,"quality_score":88.7,"cost_per_member":2874.71,"readmission_rate":0.11,"er_visit_rate":0.18,"total_claims":616},{"provider_id":"PROV0006","specialty":"Primary Care","region":"West","network_tier":2,"composite_score":56.0,"value_tier":"Moderate Value","cost_score":56.8,"quality_score":76.3,"cost_per_member":3026.13,"readmission_rate":0.13,"er_visit_rate":0.19,"total_claims":627},{"provider_id":"PROV0007","specialty":"Oncology","region":"Northeast","network_tier":1,"composite_score":66.6,"value_tier":"Moderate Value","cost_score":74.6,"quality_score":94.7,"cost_per_member":2128.82,"readmission_rate":0.11,"er_visit_rate":0.21,"total_claims":613},{"provider_id":"PROV0008","specialty":"Primary Care","region":"Northeast","network_tier":3,"composite_score":32.1,"value_tier":"Low Value","cost_score":23.4,"quality_score":45.8,"cost_per_member":4018.93,"readmission_rate":0.11,"er_visit_rate":0.19,"total_claims":567},{"provider_id":"PROV0009","specialty":"Cardiology","region":"Southeast","network_tier":2,"composite_score":55.7,"value_tier":"Moderate Value","cost_score":56.0,"quality_score":75.9,"cost_per_member":2862.53,"readmission_rate":0.14,"er_visit_rate":0.19,"total_claims":636},{"provider_id":"PROV0010","specialty":"Neurology","region":"West","network_tier":2,"composite_score":58.4,"value_tier":"Moderate Value","cost_score":57.4,"quality_score":79.9,"cost_per_member":2982.35,"readmission_rate":0.1,"er_visit_rate":0.18,"total_claims":598},{"provider_id":"PROV0011","specialty":"Primary Care","region":"West","network_tier":3,"composite_score":41.2,"value_tier":"Low Value","cost_score":22.4,"quality_score":59.8,"cost_per_member":4062.17,"readmission_rate":0.09,"er_visit_rate":0.17,"total_claims":668},{"provider_id":"PROV0012","specialty":"Cardiology","region":"West","network_tier":2,"composite_score":58.0,"value_tier":"Moderate Value","cost_score":56.4,"quality_score":83.3,"cost_per_member":2794.09,"readmission_rate":0.12,"er_visit_rate":0.19,"total_claims":631},{"provider_id":"PROV0013","specialty":"Oncology","region":"Southeast","network_tier":1,"composite_score":65.7,"value_tier":"Moderate Value","cost_score":64.8,"quality_score":95.0,"cost_per_member":2460.67,"readmission_rate":0.12,"er_visit_rate":0.2,"total_claims":608},{"provider_id":"PROV0014","specialty":"Oncology","region":"West","network_tier":1,"composite_score":67.6,"value_tier":"Moderate Value","cost_score":65.1,"quality_score":92.3,"cost_per_member":2410.68,"readmission_rate":0.14,"er_visit_rate":0.16,"total_claims":606},{"provider_id":"PROV0015","specialty":"Orthopedics","region":"Northeast","network_tier":2,"composite_score":48.5,"value_tier":"Low Value","cost_score":52.6,"quality_score":70.2,"cost_per_member":2935.2,"readmission_rate":0.12,"er_visit_rate":0.18,"total_claims":577},{"provider_id":"PROV0016","specialty":"Cardiology","region":"Southwest","network_tier":2,"composite_score":57.1,"value_tier":"Moderate Value","cost_score":59.2,"quality_score":79.5,"cost_per_member":2726.93,"readmission_rate":0.12,"er_visit_rate":0.18,"total_claims":620},{"provider_id":"PROV0017","specialty":"Orthopedics","region":"Midwest","network_tier":2,"composite_score":53.9,"value_tier":"Moderate Value","cost_score":56.4,"quality_score":77.5,"cost_per_member":2857.57,"readmission_rate":0.12,"er_visit_rate":0.19,"total_claims":628},{"provider_id":"PROV0018","specialty":"Cardiology","region":"Southeast","network_tier":2,"composite_score":61.7,"value_tier":"Moderate Value","cost_score":49.7,"quality_score":89.3,"cost_per_member":3032.86,"readmission_rate":0.11,"er_visit_rate":0.21,"total_claims":624},{"provider_id":"PROV0019","specialty":"Orthopedics","region":"Northeast","network_tier":1,"composite_score":65.7,"value_tier":"Moderate Value","cost_score":67.4,"quality_score":91.9,"cost_per_member":2561.97,"readmission_rate":0.11,"er_visit_rate":0.18,"total_claims":603},{"provider_id":"PROV0020","specialty":"Primary Care","region":"Southwest","network_tier":2,"composite_score":53.1,"value_tier":"Moderate Value","cost_score":51.3,"quality_score":74.0,"cost_per_member":3166.77,"readmission_rate":0.12,"er_visit_rate":0.17,"total_claims":639},{"provider_id":"PROV0021","specialty":"Primary Care","region":"Midwest","network_tier":3,"composite_score":39.2,"value_tier":"Low Value","cost_score":34.8,"quality_score":53.6,"cost_per_member":3608.88,"readmission_rate":0.11,"er_visit_rate":0.18,"total_claims":633},{"provider_id":"PROV0022","specialty":"Orthopedics","region":"West","network_tier":3,"composite_score":44.4,"value_tier":"Low Value","cost_score":36.2,"quality_score":67.1,"cost_per_member":3415.18,"readmission_rate":0.12,"er_visit_rate":0.18,"total_claims":623},{"provider_id":"PROV0023","specialty":"Orthopedics","region":"Northeast","network_tier":1,"composite_score":64.8,"value_tier":"Moderate Value","cost_score":68.6,"quality_score":85.0,"cost_per_member":2517.57,"readmission_rate":0.11,"er_visit_rate":0.19,"total_claims":626},{"provider_id":"PROV0024","specialty":"General Surgery","region":"Southwest","network_tier":2,"composite_score":50.7,"value_tier":"Moderate Value","cost_score":55.7,"quality_score":67.3,"cost_per_member":2747.37,"readmission_rate":0.12,"er_visit_rate":0.19,"total_claims":626},{"provider_id":"PROV0025","specialty":"Neurology","region":"Northeast","network_tier":2,"composite_score":61.6,"value_tier":"Moderate Value","cost_score":55.0,"quality_score":88.6,"cost_per_member":3090.64,"readmission_rate":0.12,"er_visit_rate":0.16,"total_claims":604},{"provider_id":"PROV0026","specialty":"Oncology","region":"Northeast","network_tier":1,"composite_score":61.5,"value_tier":"Moderate Value","cost_score":67.0,"quality_score":79.8,"cost_per_member":2364.48,"readmission_rate":0.11,"er_visit_rate":0.19,"total_claims":629},{"provider_id":"PROV0027","specialty":"Neurology","region":"Midwest","network_tier":2,"composite_score":55.1,"value_tier":"Moderate Value","cost_score":58.0,"quality_score":76.2,"cost_per_member":2934.18,"readmission_rate":0.14,"er_visit_rate":0.15,"total_claims":649},{"provider_id":"PROV0028","specialty":"General Surgery","region":"West","network_tier":1,"composite_score":66.8,"value_tier":"Moderate Value","cost_score":73.3,"quality_score":94.0,"cost_per_member":2213.04,"readmission_rate":0.12,"er_visit_rate":0.17,"total_claims":643},{"provider_id":"PROV0029","specialty":"Orthopedics","region":"West","network_tier":3,"composite_score":38.2,"value_tier":"Low Value","cost_score":16.1,"quality_score":70.3,"cost_per_member":4127.89,"readmission_rate":0.13,"er_visit_rate":0.19,"total_claims":611},{"provider_id":"PROV0030","specialty":"Cardiology","region":"Northeast","network_tier":3,"composite_score":40.6,"value_tier":"Low Value","cost_score":23.3,"quality_score":69.2,"cost_per_member":3854.76,"readmission_rate":0.13,"er_visit_rate":0.18,"total_claims":607},{"provider_id":"PROV0031","specialty":"Primary Care","region":"Southeast","network_tier":1,"composite_score":68.6,"value_tier":"Moderate Value","cost_score":80.9,"quality_score":88.9,"cost_per_member":2179.81,"readmission_rate":0.12,"er_visit_rate":0.19,"total_claims":604},{"provider_id":"PROV0032","specialty":"Orthopedics","region":"Northeast","network_tier":3,"composite_score":45.6,"value_tier":"Low Value","cost_score":48.6,"quality_score":61.2,"cost_per_member":3210.3,"readmission_rate":0.13,"er_visit_rate":0.16,"total_claims":630},{"provider_id":"PROV0033","specialty":"Cardiology","region":"Northeast","network_tier":3,"composite_score":42.0,"value_tier":"Low Value","cost_score":38.9,"quality_score":56.8,"cost_per_member":3335.78,"readmission_rate":0.11,"er_visit_rate":0.17,"total_claims":615},{"provider_id":"PROV0034","specialty":"Oncology","region":"Midwest","network_tier":2,"composite_score":51.7,"value_tier":"Moderate Value","cost_score":43.3,"quality_score":75.2,"cost_per_member":3029.4,"readmission_rate":0.12,"er_visit_rate":0.18,"total_claims":629},{"provider_id":"PROV0035","specialty":"Oncology","region":"Midwest","network_tier":3,"composite_score":38.0,"value_tier":"Low Value","cost_score":11.7,"quality_score":71.1,"cost_per_member":3991.87,"readmission_rate":0.12,"er_visit_rate":0.18,"total_claims":672},{"provider_id":"PROV0036","specialty":"Cardiology","region":"Midwest","network_tier":2,"composite_score":48.2,"value_tier":"Low Value","cost_score":47.0,"quality_score":69.0,"cost_per_member":3097.61,"readmission_rate":0.13,"er_visit_rate":0.18,"total_claims":632},{"provider_id":"PROV0037","specialty":"Orthopedics","region":"Southeast","network_tier":2,"composite_score":63.4,"value_tier":"Moderate Value","cost_score":63.5,"quality_score":77.8,"cost_per_member":2677.27,"readmission_rate":0.09,"er_visit_rate":0.19,"total_claims":633},{"provider_id":"PROV0038","specialty":"General Surgery","region":"Midwest","network_tier":2,"composite_score":47.8,"value_tier":"Low Value","cost_score":50.8,"quality_score":67.8,"cost_per_member":2902.78,"readmission_rate":0.13,"er_visit_rate":0.17,"total_claims":624},{"provider_id":"PROV0039","specialty":"General Surgery","region":"Northeast","network_tier":2,"composite_score":50.8,"value_tier":"Moderate Value","cost_score":47.9,"quality_score":75.1,"cost_per_member":2934.02,"readmission_rate":0.13,"er_visit_rate":0.15,"total_claims":640},{"provider_id":"PROV0040","specialty":"Neurology","region":"Southeast","network_tier":2,"composite_score":67.0,"value_tier":"Moderate Value","cost_score":55.7,"quality_score":97.7,"cost_per_member":3072.99,"readmission_rate":0.1,"er_visit_rate":0.19,"total_claims":651},{"provider_id":"PROV0041","specialty":"Neurology","region":"Southeast","network_tier":1,"composite_score":65.0,"value_tier":"Moderate Value","cost_score":75.4,"quality_score":84.8,"cost_per_member":2396.87,"readmission_rate":0.12,"er_visit_rate":0.19,"total_claims":622},{"provider_id":"PROV0042","specialty":"Cardiology","region":"Southwest","network_tier":2,"composite_score":54.6,"value_tier":"Moderate Value","cost_score":49.2,"quality_score":77.2,"cost_per_member":3191.57,"readmission_rate":0.1,"er_visit_rate":0.17,"total_claims":682},{"provider_id":"PROV0043","specialty":"Oncology","region":"Midwest","network_tier":2,"composite_score":48.6,"value_tier":"Low Value","cost_score":51.6,"quality_score":60.8,"cost_per_member":2798.87,"readmission_rate":0.11,"er_visit_rate":0.17,"total_claims":601},{"provider_id":"PROV0044","specialty":"General Surgery","region":"West","network_tier":3,"composite_score":29.5,"value_tier":"Low Value","cost_score":0.7,"quality_score":54.6,"cost_per_member":4371.17,"readmission_rate":0.13,"er_visit_rate":0.18,"total_claims":658},{"provider_id":"PROV0045","specialty":"Cardiology","region":"Midwest","network_tier":3,"composite_score":35.8,"value_tier":"Low Value","cost_score":28.0,"quality_score":57.3,"cost_per_member":3719.01,"readmission_rate":0.13,"er_visit_rate":0.15,"total_claims":628},{"provider_id":"PROV0046","specialty":"Primary Care","region":"Southeast","network_tier":2,"composite_score":59.8,"value_tier":"Moderate Value","cost_score":61.6,"quality_score":86.7,"cost_per_member":2776.44,"readmission_rate":0.12,"er_visit_rate":0.16,"total_claims":575},{"provider_id":"PROV0047","specialty":"Primary Care","region":"Midwest","network_tier":2,"composite_score":55.2,"value_tier":"Moderate Value","cost_score":50.2,"quality_score":81.5,"cost_per_member":3153.32,"readmission_rate":0.14,"er_visit_rate":0.17,"total_claims":625},{"provider_id":"PROV0048","specialty":"Oncology","region":"Midwest","network_tier":2,"composite_score":55.0,"value_tier":"Moderate Value","cost_score":36.5,"quality_score":86.0,"cost_per_member":3231.69,"readmission_rate":0.11,"er_visit_rate":0.18,"total_claims":613},{"provider_id":"PROV0049","specialty":"Primary Care","region":"Southeast","network_tier":3,"composite_score":36.3,"value_tier":"Low Value","cost_score":23.4,"quality_score":60.1,"cost_per_member":3997.95,"readmission_rate":0.15,"er_visit_rate":0.16,"total_claims":591},{"provider_id":"PROV0050","specialty":"Neurology","region":"Midwest","network_tier":2,"composite_score":54.2,"value_tier":"Moderate Value","cost_score":60.8,"quality_score":64.8,"cost_per_member":2873.75,"readmission_rate":0.09,"er_visit_rate":0.19,"total_claims":649},{"provider_id":"PROV0051","specialty":"Cardiology","region":"Southwest","network_tier":2,"composite_score":56.0,"value_tier":"Moderate Value","cost_score":54.1,"quality_score":79.4,"cost_per_member":2888.03,"readmission_rate":0.13,"er_visit_rate":0.2,"total_claims":633},{"provider_id":"PROV0052","specialty":"Oncology","region":"Southwest","network_tier":3,"composite_score":40.0,"value_tier":"Low Value","cost_score":25.6,"quality_score":62.0,"cost_per_member":3568.95,"readmission_rate":0.12,"er_visit_rate":0.18,"total_claims":624},{"provider_id":"PROV0053","specialty":"Cardiology","region":"Midwest","network_tier":3,"composite_score":40.7,"value_tier":"Low Value","cost_score":34.9,"quality_score":59.4,"cost_per_member":3467.4,"readmission_rate":0.12,"er_visit_rate":0.17,"total_claims":641},{"provider_id":"PROV0054","specialty":"Cardiology","region":"Southeast","network_tier":1,"composite_score":62.2,"value_tier":"Moderate Value","cost_score":71.6,"quality_score":80.3,"cost_per_member":2406.6,"readmission_rate":0.13,"er_visit_rate":0.19,"total_claims":650},{"provider_id":"PROV0055","specialty":"General Surgery","region":"West","network_tier":2,"composite_score":58.5,"value_tier":"Moderate Value","cost_score":46.1,"quality_score":88.0,"cost_per_member":3026.15,"readmission_rate":0.14,"er_visit_rate":0.17,"total_claims":604},{"provider_id":"PROV0056","specialty":"Neurology","region":"Midwest","network_tier":2,"composite_score":63.0,"value_tier":"Moderate Value","cost_score":62.0,"quality_score":87.2,"cost_per_member":2820.49,"readmission_rate":0.13,"er_visit_rate":0.19,"total_claims":638},{"provider_id":"PROV0057","specialty":"General Surgery","region":"West","network_tier":1,"composite_score":63.1,"value_tier":"Moderate Value","cost_score":74.7,"quality_score":81.4,"cost_per_member":2189.41,"readmission_rate":0.11,"er_visit_rate":0.17,"total_claims":608},{"provider_id":"PROV0058","specialty":"Oncology","region":"West","network_tier":2,"composite_score":51.5,"value_tier":"Moderate Value","cost_score":52.1,"quality_score":75.6,"cost_per_member":2759.23,"readmission_rate":0.13,"er_visit_rate":0.17,"total_claims":593},{"provider_id":"PROV0059","specialty":"Oncology","region":"Midwest","network_tier":2,"composite_score":56.4,"value_tier":"Moderate Value","cost_score":47.0,"quality_score":83.7,"cost_per_member":2956.88,"readmission_rate":0.11,"er_visit_rate":0.18,"total_claims":629},{"provider_id":"PROV0060","specialty":"Cardiology","region":"Southeast","network_tier":2,"composite_score":51.2,"value_tier":"Moderate Value","cost_score":49.1,"quality_score":70.4,"cost_per_member":3017.57,"readmission_rate":0.13,"er_visit_rate":0.17,"total_claims":652},{"provider_id":"PROV0061","specialty":"Neurology","region":"Southwest","network_tier":3,"composite_score":48.3,"value_tier":"Low Value","cost_score":42.4,"quality_score":67.4,"cost_per_member":3519.44,"readmission_rate":0.1,"er_visit_rate":0.19,"total_claims":584},{"provider_id":"PROV0062","specialty":"Primary Care","region":"Northeast","network_tier":2,"composite_score":52.7,"value_tier":"Moderate Value","cost_score":45.9,"quality_score":69.2,"cost_per_member":3338.04,"readmission_rate":0.1,"er_visit_rate":0.2,"total_claims":619},{"provider_id":"PROV0063","specialty":"Primary Care","region":"Southeast","network_tier":2,"composite_score":57.3,"value_tier":"Moderate Value","cost_score":63.2,"quality_score":77.1,"cost_per_member":2782.63,"readmission_rate":0.11,"er_visit_rate":0.19,"total_claims":687},{"provider_id":"PROV0064","specialty":"General Surgery","region":"Southeast","network_tier":2,"composite_score":48.3,"value_tier":"Low Value","cost_score":36.4,"quality_score":76.6,"cost_per_member":3329.47,"readmission_rate":0.12,"er_visit_rate":0.19,"total_claims":653},{"provider_id":"PROV0065","specialty":"General Surgery","region":"Southwest","network_tier":2,"composite_score":54.1,"value_tier":"Moderate Value","cost_score":58.4,"quality_score":72.3,"cost_per_member":2631.17,"readmission_rate":0.11,"er_visit_rate":0.15,"total_claims":602},{"provider_id":"PROV0066","specialty":"Neurology","region":"Northeast","network_tier":3,"composite_score":45.1,"value_tier":"Low Value","cost_score":37.1,"quality_score":62.8,"cost_per_member":3609.26,"readmission_rate":0.11,"er_visit_rate":0.19,"total_claims":613},{"provider_id":"PROV0067","specialty":"Oncology","region":"Southwest","network_tier":1,"composite_score":70.2,"value_tier":"High Value","cost_score":75.1,"quality_score":91.6,"cost_per_member":2164.65,"readmission_rate":0.11,"er_visit_rate":0.17,"total_claims":638},{"provider_id":"PROV0068","specialty":"Neurology","region":"Southwest","network_tier":3,"composite_score":36.4,"value_tier":"Low Value","cost_score":14.6,"quality_score":65.9,"cost_per_member":4452.14,"readmission_rate":0.11,"er_visit_rate":0.17,"total_claims":647},{"provider_id":"PROV0069","specialty":"Neurology","region":"Midwest","network_tier":3,"composite_score":39.3,"value_tier":"Low Value","cost_score":28.1,"quality_score":60.5,"cost_per_member":3864.49,"readmission_rate":0.13,"er_visit_rate":0.18,"total_claims":600},{"provider_id":"PROV0070","specialty":"Neurology","region":"Northeast","network_tier":2,"composite_score":54.2,"value_tier":"Moderate Value","cost_score":42.2,"quality_score":82.1,"cost_per_member":3427.33,"readmission_rate":0.14,"er_visit_rate":0.2,"total_claims":635},{"provider_id":"PROV0071","specialty":"General Surgery","region":"Northeast","network_tier":3,"composite_score":40.4,"value_tier":"Low Value","cost_score":25.3,"quality_score":60.3,"cost_per_member":3606.9,"readmission_rate":0.1,"er_visit_rate":0.17,"total_claims":621},{"provider_id":"PROV0072","specialty":"General Surgery","region":"West","network_tier":2,"composite_score":56.2,"value_tier":"Moderate Value","cost_score":62.4,"quality_score":72.0,"cost_per_member":2551.54,"readmission_rate":0.11,"er_visit_rate":0.19,"total_claims":642},{"provider_id":"PROV0073","specialty":"Orthopedics","region":"Midwest","network_tier":2,"composite_score":48.9,"value_tier":"Low Value","cost_score":40.6,"quality_score":71.0,"cost_per_member":3322.52,"readmission_rate":0.13,"er_visit_rate":0.17,"total_claims":617},{"provider_id":"PROV0074","specialty":"Primary Care","region":"Midwest","network_tier":2,"composite_score":59.0,"value_tier":"Moderate Value","cost_score":56.9,"quality_score":80.3,"cost_per_member":2998.94,"readmission_rate":0.11,"er_visit_rate":0.23,"total_claims":629},{"provider_id":"PROV0075","specialty":"Oncology","region":"Southeast","network_tier":2,"composite_score":44.1,"value_tier":"Low Value","cost_score":39.1,"quality_score":67.7,"cost_per_member":3230.24,"readmission_rate":0.12,"er_visit_rate":0.18,"total_claims":633},{"provider_id":"PROV0076","specialty":"Oncology","region":"Northeast","network_tier":2,"composite_score":53.8,"value_tier":"Moderate Value","cost_score":46.4,"quality_score":80.4,"cost_per_member":2972.05,"readmission_rate":0.12,"er_visit_rate":0.19,"total_claims":610},{"provider_id":"PROV0077","specialty":"General Surgery","region":"Midwest","network_tier":1,"composite_score":65.8,"value_tier":"Moderate Value","cost_score":69.6,"quality_score":87.3,"cost_per_member":2404.74,"readmission_rate":0.11,"er_visit_rate":0.19,"total_claims":621},{"provider_id":"PROV0078","specialty":"Neurology","region":"Southeast","network_tier":1,"composite_score":63.6,"value_tier":"Moderate Value","cost_score":60.0,"quality_score":90.8,"cost_per_member":2848.46,"readmission_rate":0.12,"er_visit_rate":0.18,"total_claims":622},{"provider_id":"PROV0079","specialty":"Neurology","region":"Northeast","network_tier":2,"composite_score":52.4,"value_tier":"Moderate Value","cost_score":51.4,"quality_score":68.6,"cost_per_member":3166.65,"readmission_rate":0.11,"er_visit_rate":0.19,"total_claims":642},{"provider_id":"PROV0080","specialty":"General Surgery","region":"Midwest","network_tier":3,"composite_score":39.0,"value_tier":"Low Value","cost_score":25.0,"quality_score":63.1,"cost_per_member":3679.2,"readmission_rate":0.12,"er_visit_rate":0.19,"total_claims":620}];
+
+const SCENARIOS = [
+  {name:"Conservative (10%)",steering:0.10,steered:493,direct:1408037,readmit:109723,er:23584,gross:1541344,cost:59160,net:1482184,roi:2505.4,readmit_avoided:9,er_avoided:11,cpm_saved:3006},
+  {name:"Base Case (20%)",   steering:0.20,steered:987,direct:4228395,readmit:366115,er:78692, gross:4673202,cost:118440,net:4554762,roi:3845.6,readmit_avoided:29,er_avoided:36,cpm_saved:4615},
+  {name:"Aggressive (35%)",  steering:0.35,steered:1727,direct:8878345,readmit:768731,er:172113,gross:9819189,cost:207240,net:9611949,roi:4638.1,readmit_avoided:61,er_avoided:78,cpm_saved:5566},
+  {name:"Maximum (50%)",     steering:0.50,steered:2468,direct:15507258,readmit:1281663,er:295153,gross:17084074,cost:296160,net:16787914,roi:5668.5,readmit_avoided:103,er_avoided:134,cpm_saved:6802}
+];
+
+const REGIONAL = [
+  {region:"Midwest",   avg_score:50.6, avg_cpm:3140, avg_readmit:12.1, avg_quality:72.5, n:21, high:0, mod:11, low:10},
+  {region:"Northeast", avg_score:52.7, avg_cpm:3055, avg_readmit:11.8, avg_quality:74.2, n:19, high:0, mod:12, low:7},
+  {region:"Southeast", avg_score:58.4, avg_cpm:2842, avg_readmit:11.9, avg_quality:81.4, n:16, high:0, mod:13, low:3},
+  {region:"Southwest", avg_score:52.1, avg_cpm:3106, avg_readmit:11.5, avg_quality:73.7, n:10, high:1, mod:6,  low:3},
+  {region:"West",      avg_score:53.5, avg_cpm:3057, avg_readmit:12.0, avg_quality:77.4, n:14, high:0, mod:10, low:4}
+];
+
+const SPECS = ["Cardiology","General Surgery","Neurology","Oncology","Orthopedics","Primary Care"];
+const SPEC_SCORES = [52.4,53.0,54.5,55.1,52.6,52.1];
+const SPEC_CPM    = [3028,2921,3219,2862,3069,3179];
+const SPEC_READ   = [12.1,12.1,11.6,11.9,11.8,11.8];
+
+const C = {green:'#22d3a0',amber:'#f59e0b',red:'#f87171',blue:'#60a5fa',purple:'#a78bfa',border:'#252a38',text2:'#8b92a8',text3:'#555e78'};
+
+Chart.defaults.color = C.text2;
+Chart.defaults.font.family = "'DM Sans', sans-serif";
+Chart.defaults.font.size = 11;
+
+function tierColor(t){ return t==='High Value'?C.green:t==='Moderate Value'?C.amber:C.red; }
+function tierClass(t){ return t==='High Value'?'high':t==='Moderate Value'?'mod':'low'; }
+
+// ── Page switching ──
+function showPage(id){
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t=>t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.target.classList.add('active');
+}
+
+// ── Rankings table ──
+function buildRankingsTable(){
+  const top15 = [...PROVIDERS].sort((a,b)=>b.composite_score-a.composite_score).slice(0,15);
+  const tbl = document.getElementById('rankings-table');
+  tbl.innerHTML = `<thead><tr><th>#</th><th>Provider</th><th>Specialty</th><th>Region</th><th>Tier</th><th style="min-width:120px">Score</th><th>Value tier</th></tr></thead>`;
+  const tb = document.createElement('tbody');
+  top15.forEach((p,i)=>{
+    const fill = p.composite_score>=70?C.green:p.composite_score>=50?C.amber:C.red;
+    const tr = document.createElement('tr');
+    tr.innerHTML = `<td style="color:var(--text3)">${i+1}</td>
+      <td>${p.provider_id}</td>
+      <td>${p.specialty}</td>
+      <td>${p.region}</td>
+      <td style="text-align:center">${p.network_tier}</td>
+      <td><div class="score-bar"><div class="bar-track"><div class="bar-fill" style="width:${p.composite_score}%;background:${fill}"></div></div><span class="score-num">${p.composite_score}</span></div></td>
+      <td><span class="badge ${tierClass(p.value_tier)}">${p.value_tier}</span></td>`;
+    tb.appendChild(tr);
+  });
+  tbl.appendChild(tb);
+}
+
+// ── Chart helpers ──
+function mkChart(id, type, data, opts={}){
+  const ctx = document.getElementById(id);
+  if(!ctx) return;
+  return new Chart(ctx, { type, data, options: { responsive:true, maintainAspectRatio:false, plugins:{legend:{display:false}}, ...opts } });
+}
+
+// ── Build all charts ──
+function buildAll(){
+  buildRankingsTable();
+
+  const top15 = [...PROVIDERS].sort((a,b)=>b.composite_score-a.composite_score).slice(0,15);
+  const labels15 = top15.map(p=>p.provider_id);
+
+  // Components stacked bar
+  mkChart('components-chart','bar',{
+    labels: labels15,
+    datasets:[
+      {label:'Cost',      data:top15.map(p=>p.cost_score*0.30),    backgroundColor:'#1a6648',stack:'s'},
+      {label:'Quality',   data:top15.map(p=>p.quality_score*0.25), backgroundColor:'#1a3d6e',stack:'s'},
+      {label:'Other',     data:top15.map(p=>(p.composite_score - p.cost_score*0.30 - p.quality_score*0.25).toFixed(1)), backgroundColor:'#5a3d00',stack:'s'},
+    ]
+  },{scales:{x:{stacked:true,grid:{color:C.border}},y:{stacked:true,min:0,max:75,grid:{color:C.border}}},plugins:{legend:{display:true,labels:{color:C.text2,boxWidth:10,font:{size:10}}},tooltip:{callbacks:{label:ctx=>`${ctx.dataset.label}: ${ctx.raw}`}}}});
+
+  // Spec bar
+  mkChart('spec-chart','bar',{
+    labels:SPECS,
+    datasets:[{data:SPEC_SCORES, backgroundColor:['#1a4870','#1a6648','#3d1a6e','#7a4020','#1a5a5a','#3d3010'], borderRadius:4}]
+  },{indexAxis:'y',scales:{x:{min:48,max:58,grid:{color:C.border}},y:{grid:{display:false}}}});
+
+  // Tier donut
+  mkChart('tier-donut','doughnut',{
+    labels:['High Value','Moderate Value','Low Value'],
+    datasets:[{data:[1,52,27],backgroundColor:[C.green,C.amber,C.red],borderWidth:0}]
+  },{cutout:'68%'});
+
+  // Scatter
+  buildScatterChart('All');
+
+  // CPM by spec
+  mkChart('cpm-spec-chart','bar',{
+    labels:SPECS,
+    datasets:[{data:SPEC_CPM, backgroundColor:C.blue+'88', borderRadius:4}]
+  },{scales:{x:{grid:{display:false}},y:{min:2700,max:3300,grid:{color:C.border},ticks:{callback:v=>'$'+v.toLocaleString()}}}});
+
+  // Readmit by spec
+  mkChart('readmit-spec-chart','bar',{
+    labels:SPECS,
+    datasets:[{data:SPEC_READ, backgroundColor:C.red+'88', borderRadius:4}]
+  },{scales:{x:{grid:{display:false}},y:{min:11,max:13,grid:{color:C.border},ticks:{callback:v=>v+'%'}}}});
+
+  // Regional boxes
+  const rb = document.getElementById('region-boxes');
+  REGIONAL.forEach(r=>{
+    const col = r.avg_score>=58?C.green:r.avg_score>=53?C.blue:C.amber;
+    const div = document.createElement('div');
+    div.className='region-box';
+    div.innerHTML=`<div class="r-name">${r.region}</div><div class="r-score" style="color:${col}">${r.avg_score}</div><div class="r-sub">${r.n} providers · $${r.avg_cpm.toLocaleString()} CPM</div>`;
+    rb.appendChild(div);
+  });
+
+  // Region score bar
+  mkChart('reg-score-chart','bar',{
+    labels:REGIONAL.map(r=>r.region),
+    datasets:[{data:REGIONAL.map(r=>r.avg_score),backgroundColor:REGIONAL.map(r=>r.avg_score>=58?C.green:r.avg_score>=53?C.blue:C.amber),borderRadius:4}]
+  },{scales:{x:{grid:{display:false}},y:{min:48,max:62,grid:{color:C.border}}}});
+
+  // Region CPM bar
+  mkChart('reg-cpm-chart','bar',{
+    labels:REGIONAL.map(r=>r.region),
+    datasets:[{data:REGIONAL.map(r=>r.avg_cpm),backgroundColor:C.blue+'66',borderRadius:4}]
+  },{scales:{x:{grid:{display:false}},y:{min:2700,max:3300,grid:{color:C.border},ticks:{callback:v=>'$'+v.toLocaleString()}}}});
+
+  // Region tier stacked
+  mkChart('reg-tier-chart','bar',{
+    labels:REGIONAL.map(r=>r.region),
+    datasets:[
+      {label:'High',data:REGIONAL.map(r=>r.high),backgroundColor:C.green,stack:'s',borderRadius:2},
+      {label:'Mod', data:REGIONAL.map(r=>r.mod), backgroundColor:C.amber,stack:'s'},
+      {label:'Low', data:REGIONAL.map(r=>r.low), backgroundColor:C.red,  stack:'s'},
+    ]
+  },{scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:C.border}}},plugins:{legend:{display:true,labels:{color:C.text2,boxWidth:8,font:{size:10}}}}});
+
+  // Region quality
+  mkChart('reg-quality-chart','bar',{
+    labels:REGIONAL.map(r=>r.region),
+    datasets:[{data:REGIONAL.map(r=>r.avg_quality),backgroundColor:C.purple+'88',borderRadius:4}]
+  },{scales:{x:{grid:{display:false}},y:{min:68,max:84,grid:{color:C.border}}}});
+
+  // ROI bar
+  mkChart('roi-bar-chart','bar',{
+    labels:SCENARIOS.map(s=>s.name),
+    datasets:[
+      {label:'Net savings', data:SCENARIOS.map(s=>s.net),  backgroundColor:C.green+'99',borderRadius:4,stack:'s'},
+      {label:'Program cost',data:SCENARIOS.map(s=>s.cost), backgroundColor:C.red+'99',  borderRadius:4,stack:'s'},
+    ]
+  },{scales:{x:{stacked:true,grid:{display:false}},y:{stacked:true,grid:{color:C.border},ticks:{callback:v=>'$'+(v/1e6).toFixed(1)+'M'}}},plugins:{legend:{display:true,labels:{color:C.text2,boxWidth:8,font:{size:10}}}}});
+
+  buildWaterfall(1);
+
+  // ROI line
+  mkChart('roi-line-chart','line',{
+    labels:['10%','20%','35%','50%'],
+    datasets:[{data:SCENARIOS.map(s=>s.roi),borderColor:C.green,backgroundColor:C.green+'22',fill:true,tension:0.4,pointRadius:5,pointBackgroundColor:C.green}]
+  },{scales:{x:{grid:{display:false}},y:{grid:{color:C.border},ticks:{callback:v=>v.toLocaleString()+'%'}}}});
+
+  // CPM saved
+  mkChart('cpm-saved-chart','bar',{
+    labels:SCENARIOS.map(s=>s.name),
+    datasets:[{data:SCENARIOS.map(s=>s.cpm_saved),backgroundColor:[C.blue+'66',C.green+'99',C.green+'cc',C.green],borderRadius:4}]
+  },{scales:{x:{grid:{display:false}},y:{grid:{color:C.border},ticks:{callback:v=>'$'+v.toLocaleString()}}}});
+
+  // Radar
+  new Chart(document.getElementById('radar-chart'),{
+    type:'radar',
+    data:{
+      labels:['Cost (30%)','Quality (25%)','Utilization (20%)','Satisfaction (15%)','Coordination (10%)'],
+      datasets:[{label:'Network avg',data:[50.0,75.7,4.0,71.4,79.0],backgroundColor:C.green+'22',borderColor:C.green,pointBackgroundColor:C.green,pointRadius:4}]
+    },
+    options:{responsive:true,maintainAspectRatio:false,plugins:{legend:{display:false}},scales:{r:{min:0,max:100,grid:{color:C.border},ticks:{display:false,stepSize:25},pointLabels:{color:C.text2,font:{size:11}}}}}
+  });
+
+  // Qual bars
+  mkChart('qual-chart','bar',{
+    labels:['HEDIS Score','Patient Satisfaction','Care Coordination','Preventive Rate'],
+    datasets:[{data:[75.7,71.4,79.0,34.9],backgroundColor:[C.green+'99',C.blue+'99',C.purple+'99',C.amber+'99'],borderRadius:4}]
+  },{indexAxis:'y',scales:{x:{min:0,max:100,grid:{color:C.border},ticks:{callback:v=>v+'%'}},y:{grid:{display:false}}}});
+
+  // QA list
+  const qaItems=[
+    {check:'No negative allowed amounts',status:'PASS'},
+    {check:'Paid ≤ allowed amount',status:'PASS'},
+    {check:'No orphan provider IDs',status:'PASS'},
+    {check:'No orphan patient IDs',status:'PASS'},
+    {check:'Valid readmission flags',status:'PASS'},
+    {check:'Valid ER visit flags',status:'PASS'},
+    {check:'Quality metrics coverage',status:'PASS'},
+    {check:'No null claim IDs',status:'PASS'},
+    {check:'No negative LOS',status:'PASS'},
+  ];
+  const qaDiv = document.getElementById('qa-list');
+  qaItems.forEach(q=>{
+    const d=document.createElement('div');
+    d.style.cssText='display:flex;justify-content:space-between;align-items:center;padding:5px 0;border-bottom:1px solid var(--border);';
+    d.innerHTML=`<span style="font-size:11px;color:var(--text3)">${q.check}</span><span style="font-size:10px;color:var(--green);font-family:'DM Mono',monospace;background:#0d2a1a;padding:1px 6px;border-radius:3px;">${q.status}</span>`;
+    qaDiv.appendChild(d);
+  });
+}
+
+// ── Scatter ──
+let scatterChartInst;
+function buildScatterChart(filter){
+  const filtered = filter==='All'?PROVIDERS:PROVIDERS.filter(p=>p.specialty===filter);
+  const datasets = ['High Value','Moderate Value','Low Value'].map(tier=>({
+    label:tier,
+    data:filtered.filter(p=>p.value_tier===tier).map(p=>({x:p.cost_score,y:p.quality_score,id:p.provider_id,spec:p.specialty,region:p.region,cpm:p.cost_per_member})),
+    backgroundColor:tierColor(tier)+'bb',borderColor:tierColor(tier),borderWidth:1,pointRadius:6,pointHoverRadius:8
+  }));
+  if(scatterChartInst){ scatterChartInst.data.datasets=datasets; scatterChartInst.update(); return; }
+  const ctx = document.getElementById('scatter-chart');
+  scatterChartInst = new Chart(ctx,{
+    type:'bubble',
+    data:{datasets},
+    options:{responsive:true,maintainAspectRatio:false,
+      plugins:{legend:{display:false},tooltip:{callbacks:{label:ctx=>[`${ctx.raw.id} (${ctx.raw.spec})`,`Cost: ${ctx.raw.x} | Quality: ${ctx.raw.y}`,`CPM: $${ctx.raw.cpm.toLocaleString()}`]}}},
+      scales:{
+        x:{title:{display:true,text:'Cost Score (0–100)',color:C.text3},min:-5,max:110,grid:{color:C.border}},
+        y:{title:{display:true,text:'Quality Score (0–100)',color:C.text3},min:40,max:110,grid:{color:C.border}}
+      }
+    }
+  });
+}
+
+function filterScatter(spec, btn){
+  document.querySelectorAll('#scatter-pills .pill').forEach(p=>p.classList.remove('active'));
+  btn.classList.add('active');
+  buildScatterChart(spec);
+}
+
+// ── Waterfall ──
+function buildWaterfall(idx){
+  const s = SCENARIOS[idx];
+  const maxVal = s.gross;
+  const items=[
+    {label:'Direct\nsavings',val:s.direct,color:C.blue},
+    {label:'Readmit\nsavings',val:s.readmit,color:C.green},
+    {label:'ER\nsavings',val:s.er,color:C.purple},
+    {label:'Program\ncost',val:-s.cost,color:C.red},
+    {label:'Net\nsavings',val:s.net,color:C.green},
+  ];
+  const wf = document.getElementById('waterfall');
+  wf.innerHTML='';
+  items.forEach(item=>{
+    const pct = Math.abs(item.val)/maxVal*100;
+    const col = document.createElement('div');
+    col.className='wf-col';
+    col.innerHTML=`
+      <div class="wf-val">${item.val<0?'-':''}$${(Math.abs(item.val)/1e6).toFixed(2)}M</div>
+      <div class="wf-bar-wrap"><div class="wf-bar" style="height:${Math.max(pct,3)}%;background:${item.color}88;border:1px solid ${item.color}"></div></div>
+      <div class="wf-label">${item.label}</div>`;
+    wf.appendChild(col);
+  });
+}
+
+function selectScenario(idx, el){
+  document.querySelectorAll('.scenario-card').forEach(c=>c.classList.remove('active'));
+  el.classList.add('active');
+  buildWaterfall(idx);
+}
+
+buildAll();
+</script>
+</body>
+</html>
