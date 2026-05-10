@@ -1,3 +1,9 @@
+![Python](https://img.shields.io/badge/Python-3.9%2B-blue?logo=python&logoColor=white)
+![SQL](https://img.shields.io/badge/SQL-SQLite%20%2F%20DuckDB-lightgrey?logo=sqlite)
+![Tableau](https://img.shields.io/badge/Tableau-Dashboard%20Specs-E97627?logo=tableau&logoColor=white)
+![Status](https://img.shields.io/badge/Status-Complete-brightgreen)
+![License](https://img.shields.io/badge/License-MIT-blue)
+[![Live Demo](https://img.shields.io/badge/Live%20Demo-View%20Dashboard-22d3a0?style=flat&logo=github)](https://cyn-crypto.github.io/Healthcare-Provider-ROI-Value-Based-Care-Analytics-System/healthcare_vbc_dashboard.html)
 # Healthcare Provider ROI & Value-Based Care Analytics System
 
 A full analytics pipeline for evaluating provider performance, modeling financial ROI from patient steering, and tracking value-based care KPIs.
