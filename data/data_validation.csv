@@ -1,0 +1,10 @@
+check,count,status
+No negative allowed amounts,0,PASS
+No paid > allowed,0,PASS
+No orphan provider IDs,0,PASS
+No orphan patient IDs,0,PASS
+Valid readmission flags,0,PASS
+Valid ER visit flags,0,PASS
+Quality metrics coverage,0,PASS
+No null claim IDs,0,PASS
+Positive LOS days,0,PASS

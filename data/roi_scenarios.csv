@@ -1,0 +1,5 @@
+scenario,steering_rate,members_steered,direct_cost_savings,readmit_savings,er_savings,gross_savings,program_cost,net_savings,roi_pct,readmissions_avoided,er_visits_avoided,cost_per_member_saved
+Conservative (10% Steering),0.1,493,1408037.09,109723.31,23583.54,1541343.94,59160,1482183.94,2505.4,9.0,11.0,3006.46
+Base Case (20% Steering),0.2,987,4228395.35,366115.31,78691.54,4673202.2,118440,4554762.2,3845.6,29.0,36.0,4614.75
+Aggressive (35% Steering),0.35,1727,8878345.01,768730.88,172112.82,9819188.7,207240,9611948.7,4638.1,61.0,78.0,5565.69
+Maximum (50% Steering),0.5,2468,15507257.95,1281663.25,295153.06,17084074.25,296160,16787914.25,5668.5,103.0,134.0,6802.23

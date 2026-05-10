@@ -1,0 +1,26 @@
+{
+  "steering_effectiveness": {
+    "members_steerable": 4937,
+    "projected_members_steered": 987,
+    "roi_pct": 3845.6,
+    "net_savings_usd": 4554762.2
+  },
+  "provider_engagement": {
+    "total_providers": 80,
+    "high_value_providers": 1,
+    "pct_accepting_vbc": 63.7,
+    "avg_composite_score": 53.3
+  },
+  "cost_per_member": {
+    "current_avg_cpm": 28560.59,
+    "projected_savings_cpm": 4614.75,
+    "readmissions_avoided": 29,
+    "er_visits_avoided": 36
+  },
+  "quality_metrics": {
+    "avg_hedis_score": 75.7,
+    "avg_readmission_rate": 0.1187,
+    "avg_er_rate": 0.1812,
+    "preventive_visit_rate": 0.3495
+  }
+}

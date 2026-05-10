@@ -1,0 +1,81 @@
+provider_id,provider_name,specialty,region,network_tier,years_in_network,accepts_value_based,hospital_affiliation,base_cost_multiplier,quality_score_base
+PROV0001,Provider_0001,General Surgery,Northeast,2,15,False,Hospital_13,0.904,0.888
+PROV0002,Provider_0002,Primary Care,Midwest,1,11,False,Hospital_04,0.831,0.824
+PROV0003,Provider_0003,Cardiology,Southeast,1,12,False,Hospital_02,0.763,0.852
+PROV0004,Provider_0004,Cardiology,Northeast,2,12,True,Hospital_11,0.919,0.779
+PROV0005,Provider_0005,General Surgery,West,2,16,True,Hospital_14,0.95,0.796
+PROV0006,Provider_0006,Primary Care,West,2,3,False,Hospital_07,0.952,0.817
+PROV0007,Provider_0007,Oncology,Northeast,1,15,False,Hospital_12,0.757,0.88
+PROV0008,Provider_0008,Primary Care,Northeast,3,4,True,Hospital_04,1.317,0.502
+PROV0009,Provider_0009,Cardiology,Southeast,2,18,False,Hospital_02,1.056,0.75
+PROV0010,Provider_0010,Neurology,West,2,15,True,Hospital_07,1.045,0.762
+PROV0011,Provider_0011,Primary Care,West,3,13,True,Hospital_05,1.337,0.625
+PROV0012,Provider_0012,Cardiology,West,2,13,True,Hospital_13,0.946,0.797
+PROV0013,Provider_0013,Oncology,Southeast,1,11,True,Hospital_08,0.872,0.925
+PROV0014,Provider_0014,Oncology,West,1,7,False,Hospital_12,0.827,0.939
+PROV0015,Provider_0015,Orthopedics,Northeast,2,16,True,Hospital_14,1.094,0.706
+PROV0016,Provider_0016,Cardiology,Southwest,2,3,True,Hospital_05,0.925,0.807
+PROV0017,Provider_0017,Orthopedics,Midwest,2,9,False,Hospital_10,1.007,0.742
+PROV0018,Provider_0018,Cardiology,Southeast,2,4,False,Hospital_07,1.07,0.897
+PROV0019,Provider_0019,Orthopedics,Northeast,1,13,True,Hospital_11,0.856,0.902
+PROV0020,Provider_0020,Primary Care,Southwest,2,6,True,Hospital_12,1.11,0.771
+PROV0021,Provider_0021,Primary Care,Midwest,3,7,False,Hospital_01,1.269,0.532
+PROV0022,Provider_0022,Orthopedics,West,3,9,True,Hospital_06,1.088,0.641
+PROV0023,Provider_0023,Orthopedics,Northeast,1,19,True,Hospital_08,0.787,0.904
+PROV0024,Provider_0024,General Surgery,Southwest,2,9,True,Hospital_14,0.999,0.66
+PROV0025,Provider_0025,Neurology,Northeast,2,17,False,Hospital_11,1.005,0.908
+PROV0026,Provider_0026,Oncology,Northeast,1,5,True,Hospital_01,0.754,0.855
+PROV0027,Provider_0027,Neurology,Midwest,2,6,True,Hospital_04,0.983,0.719
+PROV0028,Provider_0028,General Surgery,West,1,6,True,Hospital_04,0.796,0.893
+PROV0029,Provider_0029,Orthopedics,West,3,16,False,Hospital_12,1.455,0.625
+PROV0030,Provider_0030,Cardiology,Northeast,3,4,True,Hospital_03,1.257,0.686
+PROV0031,Provider_0031,Primary Care,Southeast,1,9,False,Hospital_07,0.737,0.861
+PROV0032,Provider_0032,Orthopedics,Northeast,3,10,True,Hospital_12,1.163,0.627
+PROV0033,Provider_0033,Cardiology,Northeast,3,12,True,Hospital_11,1.252,0.569
+PROV0034,Provider_0034,Oncology,Midwest,2,16,False,Hospital_08,1.074,0.746
+PROV0035,Provider_0035,Oncology,Midwest,3,17,True,Hospital_06,1.368,0.727
+PROV0036,Provider_0036,Cardiology,Midwest,2,3,False,Hospital_02,1.014,0.687
+PROV0037,Provider_0037,Orthopedics,Southeast,2,16,False,Hospital_04,0.922,0.807
+PROV0038,Provider_0038,General Surgery,Midwest,2,8,False,Hospital_01,1.033,0.647
+PROV0039,Provider_0039,General Surgery,Northeast,2,14,True,Hospital_06,1.07,0.746
+PROV0040,Provider_0040,Neurology,Southeast,2,2,True,Hospital_01,0.979,0.923
+PROV0041,Provider_0041,Neurology,Southeast,1,16,True,Hospital_03,0.799,0.891
+PROV0042,Provider_0042,Cardiology,Southwest,2,6,True,Hospital_09,0.99,0.78
+PROV0043,Provider_0043,Oncology,Midwest,2,3,False,Hospital_04,0.932,0.669
+PROV0044,Provider_0044,General Surgery,West,3,3,True,Hospital_09,1.388,0.6
+PROV0045,Provider_0045,Cardiology,Midwest,3,14,True,Hospital_06,1.196,0.575
+PROV0046,Provider_0046,Primary Care,Southeast,2,17,False,Hospital_09,0.923,0.843
+PROV0047,Provider_0047,Primary Care,Midwest,2,3,True,Hospital_08,1.002,0.812
+PROV0048,Provider_0048,Oncology,Midwest,2,13,True,Hospital_08,1.076,0.799
+PROV0049,Provider_0049,Primary Care,Southeast,3,15,True,Hospital_02,1.451,0.579
+PROV0050,Provider_0050,Neurology,Midwest,2,17,True,Hospital_06,1.028,0.647
+PROV0051,Provider_0051,Cardiology,Southwest,2,8,False,Hospital_12,0.996,0.791
+PROV0052,Provider_0052,Oncology,Southwest,3,15,False,Hospital_08,1.138,0.631
+PROV0053,Provider_0053,Cardiology,Midwest,3,19,True,Hospital_07,1.241,0.585
+PROV0054,Provider_0054,Cardiology,Southeast,1,9,False,Hospital_01,0.773,0.861
+PROV0055,Provider_0055,General Surgery,West,2,16,True,Hospital_13,1.03,0.859
+PROV0056,Provider_0056,Neurology,Midwest,2,3,True,Hospital_03,0.981,0.872
+PROV0057,Provider_0057,General Surgery,West,1,16,False,Hospital_04,0.78,0.805
+PROV0058,Provider_0058,Oncology,West,2,10,False,Hospital_04,0.99,0.732
+PROV0059,Provider_0059,Oncology,Midwest,2,1,True,Hospital_13,0.984,0.764
+PROV0060,Provider_0060,Cardiology,Southeast,2,12,True,Hospital_12,1.018,0.744
+PROV0061,Provider_0061,Neurology,Southwest,3,12,True,Hospital_01,1.208,0.655
+PROV0062,Provider_0062,Primary Care,Northeast,2,12,True,Hospital_02,1.009,0.734
+PROV0063,Provider_0063,Primary Care,Southeast,2,8,True,Hospital_10,0.95,0.739
+PROV0064,Provider_0064,General Surgery,Southeast,2,13,False,Hospital_08,1.065,0.798
+PROV0065,Provider_0065,General Surgery,Southwest,2,10,True,Hospital_08,0.857,0.687
+PROV0066,Provider_0066,Neurology,Northeast,3,5,True,Hospital_07,1.366,0.669
+PROV0067,Provider_0067,Oncology,Southwest,1,17,True,Hospital_04,0.758,0.937
+PROV0068,Provider_0068,Neurology,Southwest,3,17,True,Hospital_13,1.326,0.612
+PROV0069,Provider_0069,Neurology,Midwest,3,19,True,Hospital_05,1.316,0.572
+PROV0070,Provider_0070,Neurology,Northeast,2,4,False,Hospital_09,1.145,0.784
+PROV0071,Provider_0071,General Surgery,Northeast,3,9,False,Hospital_12,1.304,0.624
+PROV0072,Provider_0072,General Surgery,West,2,8,True,Hospital_02,0.873,0.765
+PROV0073,Provider_0073,Orthopedics,Midwest,2,13,True,Hospital_04,1.023,0.749
+PROV0074,Provider_0074,Primary Care,Midwest,2,4,True,Hospital_03,1.025,0.849
+PROV0075,Provider_0075,Oncology,Southeast,2,19,True,Hospital_03,0.954,0.67
+PROV0076,Provider_0076,Oncology,Northeast,2,8,True,Hospital_09,1.067,0.828
+PROV0077,Provider_0077,General Surgery,Midwest,1,17,True,Hospital_01,0.818,0.881
+PROV0078,Provider_0078,Neurology,Southeast,1,3,False,Hospital_09,0.982,0.904
+PROV0079,Provider_0079,Neurology,Northeast,2,1,True,Hospital_06,1.115,0.718
+PROV0080,Provider_0080,General Surgery,Midwest,3,10,False,Hospital_08,1.23,0.606
